@@ -1,0 +1,9 @@
+flask
+Flask-SQLAlchemy
+bcrypt
+pyjwt
+pydantic
+geoalchemy2
+psycopg2
+python-dotenv
+shapely

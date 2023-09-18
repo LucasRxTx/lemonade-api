@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  db:
+    image: postgis/postgis
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: lemonade
+    ports:
+      - "5432:5432"
+  api:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - .:/code
+    environment:
+      FLASK_ENV: ${FLASK_ENV}
+      SECRET_KEY: ${SECRET_KEY}
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+    command: [ "python", "app.py" ]
+

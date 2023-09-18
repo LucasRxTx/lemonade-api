@@ -1,0 +1,747 @@
+---
+openapi: 3.1.0
+info:
+  title: Lemonade API
+  version: 1.0.0
+  description: |
+    This is the API for the Lemonade app.
+
+servers:
+  - url: http://127.0.0.1:5000
+    description: Local server
+
+tags:
+  - name: default
+    description: Default tag
+  - name: auth
+    description: API Authentication
+  - name: users
+    description: User management
+  - name: Me
+    description: The current user
+  - name: My Lemonade Stands
+    description: The current user's lemonade stands
+  - name: My Sales
+    description: Sales information for the current users lemonade stands
+  - name: My Tokens
+    description: Auth token management for the current user
+paths:
+  /my/tokens:
+    get:
+      summary: Get all tokens for current user
+      description: |
+        Get all tokens issued for the current user.
+
+        This is a security feature that allows a user to see
+        all tokens issued for their account.
+
+        The results are not paginated... yet.
+      tags:
+        - My Tokens
+      security:
+        - BearerAuth: [lemonade-stand.my.tokens.get]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccessTokensResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/revoke:
+    post:
+      summary: Revoke refresh token
+      description: |
+        To implement log out, call this endpoint to revoke the refresh token, and then discard all tokens on the client side.
+
+        The revoke endpoint will revoke the refresh token provided in the request body.
+
+        The old refresh token should be discarded by the client.
+
+        Any access tokens in the wild will still be valid until they expire.
+
+        To implement log out, discard tokens on the client side.
+      tags:
+        - auth
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeRequest'
+      responses:
+        '201':
+          description: Refresh token revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      description: |
+        The refresh endpoint will generate a new token pair, using the refresh token provided in the request body.
+
+        The refresh token will be revoked and a new refresh token will be generated.
+
+        The old refresh token should be discarded by the client.
+
+        The previous access token will still be valid until it expires.
+
+        The previous access token should be discarded by the client.
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '201':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: Login
+      description: Login to the API
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users:
+    get:
+      summary: Get all users
+      description: Get all users.  The results are not paginated... yet.
+      tags:
+        - users
+      security:
+        - BearerAuth: ["lemonade-stand.admin.users.get"]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create user
+      description: Create a new user
+      tags:
+        - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      description: Get a user by ID
+      tags:
+        - users
+      security:
+        - BearerAuth: ["lemonade-stand.admin.users.get"]
+      parameters:
+        - name: id
+          in: path
+          description: ID of user to return
+          required: true
+          schema:
+            type: integer
+            format: int32
+  /users/me:
+    get:
+      summary: Get current user
+      description: Get the current user
+      tags:
+        - Me
+      security:
+        - BearerAuth: ["lemonade-stand.me.get"]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /my/stands:
+    post:
+      summary: Create a lemonade stand.
+      description: |
+        Create a lemonade stand.
+
+        A user can create multiple lemonade stands.  The application does not provide a means of taking payment, but the owner of the stand can keep track of the sales for thier stand by manually reporting each sale using the `POST /my/stands/{id}/sales` endpoint.
+      tags:
+        - My Lemonade Stands
+      security:
+        - BearerAuth: ["lemonade-stand.my.stands.create"]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStandRequest'
+      responses:
+        "201":
+          description: Stand created
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL of the created stand
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Get all lemonade stands for current user.
+      description: |
+        Get a list of all of the current lemonade stands for the current user.
+      tags:
+        - My Lemonade Stands
+      security:
+        - BearerAuth: ["lemonade-stand.my.stands.get"]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stand'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /my/stands/{id}:
+    get:
+      summary: Get lemonade stand by ID for the current user.
+      description: |
+        Get a lemonade stand by ID for the current user.
+      tags:
+        - My Lemonade Stands
+      security:
+        - BearerAuth: ["lemonade-stand.my.stands.get"]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stand'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /my/stands/{id}/sales:
+    post:
+      summary: Report a sale for a lemonade stand.
+      description: |
+        Report a sale for a lemonade stand.
+
+        A user can report a sale for a lemonade stand.  The application does not provide a means of taking payment, but the owner of the stand can keep track of the sales for thier stand by manually reporting each sale using this endpoint.
+
+        `price_in_micros` is the price of the sale in micros.  Micros is 1/1,000,000 of a unit of currency.  For example, $1.00 is represented as 1000000 micros.  Do no use any thousands seprator, or decimal places.
+
+        The currency for the sale is the currency set for the stand.
+      tags:
+        - My Lemonade Stands
+      security:
+        - BearerAuth: ["lemonade-stand.my.stands.sales.create"]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportSaleRequest'
+      responses:
+        "201":
+          description: Sale reported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Get all sales for a lemonade stand.
+      description: Get all of the sales for a lemonade stand fro the current user.
+      tags:
+        - My Lemonade Stands
+      security:
+        - BearerAuth: ["lemonade-stand.my.stands.get"]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /my/sales:
+    get:
+      summary: Get all of the current users sales.
+      description: Get all of the current users sales.
+      tags:
+        - My Sales
+      security:
+        - BearerAuth: ["lemonade-stand.my.sales.get"]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /stands/near-me:
+    get:
+      summary: Get all lemonade stands near the current user.
+      description: Get all lemonade stands near the current user.
+      tags:
+        - Lemonade Stands
+      parameters:
+        - name: latitude
+          in: query
+          description: The latitude of the current user.
+          required: true
+          schema:
+            type: number
+            format: double
+        - name: longitude
+          in: query
+          description: The longitude of the current user.
+          required: true
+          schema:
+            type: number
+            format: double      
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    ReportSaleRequest:
+      type: object
+      properties:
+        price_in_micros:
+          type: integer
+          format: int64
+    AccessTokenResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        userId:
+          type: integer
+          format: int32
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+        token:
+          type: string
+        expiration:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type: string
+          format: date-time  
+    Stand:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        owner_id:
+          type: integer
+          format: int32
+        location:
+          type: array
+          items:
+            type: number
+            format: float
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        current_price_in_micros:
+          type: integer
+          format: int32
+        currency:
+          type: string
+        sales:
+          type: array
+          items:
+            '#/components/schemas/Sale'
+    SaleRelationship:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        price_in_micros:
+          type: integer
+          format: int32
+        currency:
+          type: string
+    Sale:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        currency:
+          type: string
+        price_in_micros:
+          type: integer
+          format: int32
+        date:
+          type: string
+          format: date-time
+
+    CreateStandRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+        current_price_in_micros:
+          type: integer
+          format: int32
+        currency:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+          format: int32
+    CreateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+          format: int32
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    EmptyResponse:
+      type: string
+      value: ''
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+    RefreshResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    RevokeRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
