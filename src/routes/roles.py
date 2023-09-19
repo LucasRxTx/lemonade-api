@@ -9,7 +9,7 @@ roles_blueprint = flask.Blueprint("roles", __name__)
 @roles_blueprint.route("/roles", methods=["GET"])
 def get_all_roles():
     return flask.jsonify(
-        RoleResponse.from_orm(role).model_dump(by_alias=True)
+        RoleResponse.model_validate(role).model_dump(by_alias=True)
         for role in Role.query.all()
     )
 
@@ -17,6 +17,6 @@ def get_all_roles():
 @roles_blueprint.route("/permissions", methods=["GET"])
 def get_all_permissions():
     return flask.jsonify(
-        PermissionResponse.from_orm(permission).model_dump(by_alias=True)
+        PermissionResponse.model_validate(permission).model_dump(by_alias=True)
         for permission in Permission.query.all()
     )

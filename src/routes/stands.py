@@ -59,9 +59,7 @@ def get_my_stand(stand_id: int):
 
 
 @stands_blueprint.route("/my/stands/<int:stand_id>/sales", methods=["POST"])
-@services.auth.auth_required(
-    permissions=["lemonade-stand.my.stands.sales.create"]
-)
+@services.auth.auth_required(permissions=["lemonade-stand.my.stands.sales.create"])
 def sell_lemonade(stand_id: int):
     stand = services.stand.get_owners_lemonade_stand_by_id(
         owner_id=flask.g.user.id, stand_id=stand_id
@@ -109,7 +107,7 @@ def get_my_stand_sales(stand_id: int):
         raise NotFound()
 
     return flask.jsonify(
-        LemonadeSaleResponse.from_orm(sale).model_dump(by_alias=True)
+        LemonadeSaleResponse.model_validate(sale).model_dump(by_alias=True)
         for sale in stand.sales
     )
 
@@ -123,7 +121,8 @@ def get_my_sales():
     sales = services.stand.get_lemonade_stand_sales_by_ids(stand_ids)
 
     return flask.jsonify(
-        LemonadeSaleResponse.from_orm(sale).model_dump(by_alias=True) for sale in sales
+        LemonadeSaleResponse.model_validate(sale).model_dump(by_alias=True)
+        for sale in sales
     )
 
 

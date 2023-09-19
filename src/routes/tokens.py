@@ -11,6 +11,6 @@ tokens_blueprint = flask.Blueprint("tokens", __name__)
 def get_all_tokens():
     tokens = services.auth.get_all_access_tokens_for_user(user_id=flask.g.user.id)
     return flask.jsonify(
-        AccessTokenResponse.from_orm(token).model_dump(by_alias=True)
+        AccessTokenResponse.model_validate(token).model_dump(by_alias=True)
         for token in tokens
     )

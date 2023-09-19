@@ -16,8 +16,8 @@ users_blueprint = flask.Blueprint("users", __name__)
 @services.auth.auth_required(permissions=["lemonade-stand.admin.users.get"])
 def get_all_users():
     users = services.user.get_all_users()
-    users_data = [GetUserResponse.from_orm(user) for user in users]
-    return flask.jsonify(user.json(by_alias=True) for user in users_data)
+    users_data = [GetUserResponse.model_validate(user) for user in users]
+    return flask.jsonify(user.model_dump_json(by_alias=True) for user in users_data)
 
 
 @users_blueprint.route("/users/<int:id>", methods=["GET"])
@@ -68,5 +68,5 @@ def create_user():
 @services.auth.auth_required(permissions=["lemonade-stand.me.get"])
 def get_me():
     return flask.jsonify(
-        GetUserResponse.from_orm(flask.g.user).model_dump(by_alias=True)
+        GetUserResponse.model_validate(flask.g.user).model_dump(by_alias=True)
     )
