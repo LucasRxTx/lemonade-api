@@ -7,7 +7,6 @@ import time
 
 import flask
 import sqlalchemy
-import werkzeug.security
 
 from models import Permission, Role, User, db
 from routes.auth import auth_blueprint
