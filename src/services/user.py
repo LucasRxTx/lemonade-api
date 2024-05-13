@@ -26,14 +26,18 @@ def create_user(
     last_name: str,
     age: int,
     password: pydantic.SecretStr,
+    roles: list[Role] | None
 ) -> None:
+    roles = roles or list()
     password_hash = werkzeug.security.generate_password_hash(
         password.get_secret_value()
     )
 
     role = Role.query.filter_by(name="lemonade-stand.user").one_or_none()
     if role is None:
-        raise ServerError()
+        raise ServerError("Default app permissions have not been configured.")
+
+    roles.append(role)
 
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     db.session.add(
@@ -43,7 +47,7 @@ def create_user(
             first_name=first_name,
             last_name=last_name,
             age=age,
-            roles=[role],
+            roles=roles,
             created_at=now,
             updated_at=now,
         )

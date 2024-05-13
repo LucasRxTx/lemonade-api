@@ -16,9 +16,8 @@ from routes.roles import roles_blueprint
 from routes.stands import stands_blueprint
 from routes.tokens import tokens_blueprint
 from routes.users import users_blueprint
+import services.user
 
-MAX_AGE_OF_REFRESH_TOKEN = 60 * 60 * 24 * 30  # 30 days
-MAX_AGE_OF_ACCESS_TOKEN = 60 * 30  # 30 minutes
 
 logger = logging.getLogger(__name__)
 
@@ -106,16 +105,18 @@ def create_app() -> flask.Flask:
 
         if os.environ.get("FLASK_ENV") == "development":
             now = datetime.datetime.now(tz=datetime.timezone.utc)
-            db.session.add(
-                User(
+            services.user.create_user(
                     email="admin@lemonadeapp.com",
                     first_name="admin",
                     last_name="admin",
-                    password_hash=werkzeug.security.generate_password_hash("admin"),
-                    roles=db.session.query(Role).all(),
                     age=99,
+                    password_hash="admin",
+                    roles=db.session.query(Role).all(),
                     created_at=now,
-                    updated_at=now,
+                    updated_at=now
+            )
+            db.session.add(
+                User(
                 )
             )
 
